@@ -13,10 +13,10 @@ def get_vector(dim: int) -> np.ndarray:
     Returns:
         np.ndarray: column vector.
     """
-    raise NotImplementedError
+    return np.random.rand(dim)
 
 
-def get_sparse_vector(dim: int) -> sparse.coo_matrix:
+def get_sparse_vector(dim: int, non_zero_count:int = None ) -> sparse.coo_matrix:
     """Create random sparse column vector with dimension dim.
 
     Args:
@@ -25,7 +25,13 @@ def get_sparse_vector(dim: int) -> sparse.coo_matrix:
     Returns:
         sparse.coo_matrix: sparse column vector.
     """
-    raise NotImplementedError
+    non_zero_count = non_zero_count if non_zero_count is not None else np.random.randint(0, dim)
+    non_zero_positions = np.random.choice(dim, non_zero_count, replace=False)
+
+    dense = np.zeros(dim)
+    dense[non_zero_positions] = np.random.rand(non_zero_count)
+
+    return sparse.csr_matrix(dense)
 
 
 def add(x: np.ndarray, y: np.ndarray) -> np.ndarray:
@@ -38,7 +44,7 @@ def add(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     Returns:
         np.ndarray: vector sum.
     """
-    raise NotImplementedError
+    return x + y
 
 
 def scalar_multiplication(x: np.ndarray, a: float) -> np.ndarray:
@@ -51,7 +57,7 @@ def scalar_multiplication(x: np.ndarray, a: float) -> np.ndarray:
     Returns:
         np.ndarray: multiplied vector.
     """
-    raise NotImplementedError
+    return x * a
 
 
 def linear_combination(vectors: Sequence[np.ndarray], coeffs: Sequence[float]) -> np.ndarray:
@@ -64,7 +70,15 @@ def linear_combination(vectors: Sequence[np.ndarray], coeffs: Sequence[float]) -
     Returns:
         np.ndarray: linear combination of vectors.
     """
-    raise NotImplementedError
+    vectors = [np.asarray(v) for v in vectors]
+    coeffs = np.asarray(coeffs)
+
+    if len(vectors) != len(coeffs):
+        raise ValueError("Number of vectors and coefficients must match.")
+
+    mat = np.stack(vectors, axis=0)
+
+    return coeffs @ mat
 
 
 def dot_product(x: np.ndarray, y: np.ndarray) -> float:
@@ -77,7 +91,7 @@ def dot_product(x: np.ndarray, y: np.ndarray) -> float:
     Returns:
         float: dot product.
     """
-    raise NotImplementedError
+    return x * y
 
 
 def norm(x: np.ndarray, order: int | float) -> float:
@@ -90,7 +104,7 @@ def norm(x: np.ndarray, order: int | float) -> float:
     Returns:
         float: vector norm
     """
-    raise NotImplementedError
+    return np.linalg.norm(x, ord= order)
 
 
 def distance(x: np.ndarray, y: np.ndarray) -> float:
@@ -103,7 +117,7 @@ def distance(x: np.ndarray, y: np.ndarray) -> float:
     Returns:
         float: distance.
     """
-    raise NotImplementedError
+    return np.linalg.norm(x - y)
 
 
 def cos_between_vectors(x: np.ndarray, y: np.ndarray) -> float:
@@ -117,7 +131,7 @@ def cos_between_vectors(x: np.ndarray, y: np.ndarray) -> float:
     Returns:
         np.ndarray: angle in deg.
     """
-    raise NotImplementedError
+    return np.degrees(np.acos(np.dot(x,y)/(np.linalg.norm(x)*np.linalg.norm(y))))
 
 
 def is_orthogonal(x: np.ndarray, y: np.ndarray) -> bool:
@@ -131,7 +145,7 @@ def is_orthogonal(x: np.ndarray, y: np.ndarray) -> bool:
     Returns:
         bool: are vectors orthogonal.
     """
-    raise NotImplementedError
+    return cos_between_vectors(x, y) == 90
 
 
 def solves_linear_systems(a: np.ndarray, b: np.ndarray) -> np.ndarray:
@@ -144,4 +158,4 @@ def solves_linear_systems(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     Returns:
         np.ndarray: sytems solution
     """
-    raise NotImplementedError
+    return np.linalg.solve(a,b)
