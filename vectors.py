@@ -13,10 +13,10 @@ def get_vector(dim: int) -> np.ndarray:
     Returns:
         np.ndarray: column vector.
     """
-    return np.random.rand(dim)
+    return np.random.rand(dim, 1)
 
 
-def get_sparse_vector(dim: int, non_zero_count:int = None ) -> sparse.coo_matrix:
+def get_sparse_vector(dim: int) -> sparse.coo_matrix:
     """Create random sparse column vector with dimension dim.
 
     Args:
@@ -25,11 +25,13 @@ def get_sparse_vector(dim: int, non_zero_count:int = None ) -> sparse.coo_matrix
     Returns:
         sparse.coo_matrix: sparse column vector.
     """
-    non_zero_count = non_zero_count if non_zero_count is not None else np.random.randint(0, dim)
+    non_zero_count = np.random.randint(0, dim)
     non_zero_positions = np.random.choice(dim, non_zero_count, replace=False)
 
     dense = np.zeros(dim)
     dense[non_zero_positions] = np.random.rand(non_zero_count)
+
+    dense = dense.reshape(-1, 1)
 
     return sparse.csr_matrix(dense)
 
@@ -70,15 +72,10 @@ def linear_combination(vectors: Sequence[np.ndarray], coeffs: Sequence[float]) -
     Returns:
         np.ndarray: linear combination of vectors.
     """
-    vectors = [np.asarray(v) for v in vectors]
+    vectors = np.column_stack(vectors)
     coeffs = np.asarray(coeffs)
 
-    if len(vectors) != len(coeffs):
-        raise ValueError("Number of vectors and coefficients must match.")
-
-    mat = np.stack(vectors, axis=0)
-
-    return coeffs @ mat
+    return vectors @ coeffs
 
 
 def dot_product(x: np.ndarray, y: np.ndarray) -> float:
@@ -91,7 +88,7 @@ def dot_product(x: np.ndarray, y: np.ndarray) -> float:
     Returns:
         float: dot product.
     """
-    return x * y
+    return float(np.dot(x.T, y))
 
 
 def norm(x: np.ndarray, order: int | float) -> float:
@@ -131,7 +128,9 @@ def cos_between_vectors(x: np.ndarray, y: np.ndarray) -> float:
     Returns:
         np.ndarray: angle in deg.
     """
-    return np.degrees(np.acos(np.dot(x,y)/(np.linalg.norm(x)*np.linalg.norm(y))))
+    cosine_similarity = np.dot(x, y) / (np.linalg.norm(x) * np.linalg.norm(y))
+    
+    return float(np.degrees(np.arccos(np.clip(cosine_similarity, -1.0, 1.0))))
 
 
 def is_orthogonal(x: np.ndarray, y: np.ndarray) -> bool:
