@@ -33,7 +33,7 @@ def get_sparse_vector(dim: int) -> sparse.coo_matrix:
 
     dense = dense.reshape(-1, 1)
 
-    return sparse.csr_matrix(dense)
+    return sparse.coo_matrix(dense)
 
 
 def add(x: np.ndarray, y: np.ndarray) -> np.ndarray:
@@ -72,10 +72,7 @@ def linear_combination(vectors: Sequence[np.ndarray], coeffs: Sequence[float]) -
     Returns:
         np.ndarray: linear combination of vectors.
     """
-    vectors = np.column_stack(vectors)
-    coeffs = np.asarray(coeffs)
-
-    return vectors @ coeffs
+    return sum(c * v for c, v in zip(coeffs, vectors))
 
 
 def dot_product(x: np.ndarray, y: np.ndarray) -> float:
@@ -128,9 +125,11 @@ def cos_between_vectors(x: np.ndarray, y: np.ndarray) -> float:
     Returns:
         np.ndarray: angle in deg.
     """
-    cosine_similarity = np.dot(x, y) / (np.linalg.norm(x) * np.linalg.norm(y))
-    
-    return float(np.degrees(np.arccos(np.clip(cosine_similarity, -1.0, 1.0))))
+    dot_product = np.dot(x.T, y)[0, 0] 
+    norm_product = np.linalg.norm(x) * np.linalg.norm(y)
+    cosine_similarity = dot_product / norm_product
+
+    return float(np.degrees(np.arccos(cosine_similarity)))
 
 
 def is_orthogonal(x: np.ndarray, y: np.ndarray) -> bool:
